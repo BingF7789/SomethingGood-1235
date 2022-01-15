@@ -4,7 +4,7 @@ import scipy.sparse as sp
 from torchvision import datasets
 from collections import namedtuple
 from torchvision import datasets, transforms
-
+import pickle as pk
 
 def load_image(args):
     data_dir = "./data/" + str(args.dataset)
@@ -175,11 +175,12 @@ def split_equal_noniid(train_dataset, test_dataset, shards, edge_frac, clients):
         for user_a in user_arr:
             for user_b in user_arr:
                 link_list.append([user_a, user_b])
-            # A[user_a, user_arr] = 1
+
     link_sample = list(range(len(link_list)))
     link_idx = np.random.choice(link_sample, int(edge_frac * len(link_list)), replace=False)
     for idx in link_idx:
-        A[link_list[idx][0], link_list[idx][1]] = A[link_list[idx][0], link_list[idx][1]] + 1
+        # A[link_list[idx][0], link_list[idx][1]] = A[link_list[idx][0], link_list[idx][1]] + 1
+        A[link_list[idx][0], link_list[idx][1]] = 1
 
     # partition for test data
     total_shards = shards * clients
@@ -220,7 +221,6 @@ class Batches():
     def __iter__(self):
         if self.set_random_choices:
             self.dataset.set_random_choices()
-        # return ({'input': x.to(device).half(), 'target': y.to(device).long()} for (x, y) in self.dataloader)
         if self.device is not None:
             return ({'input': x.to(self.device), 'target': y.to(self.device).long()} for (x, y) in self.dataloader)
         else:

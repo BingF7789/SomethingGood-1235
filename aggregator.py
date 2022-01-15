@@ -45,7 +45,6 @@ def average_dic(model_dic, device, dp=0.001):
     for k in w_avg.keys():
         for i in range(1, len(model_dic)):
             w_avg[k] = w_avg[k].data.clone().detach() + model_dic[i][k].data.clone().detach()
-        # w_avg[k] = w_avg[k].data.clone().detach().div(len(model_dic)) + torch.mul(torch.randn(w_avg[k].shape).to(device), dp)
         w_avg[k] = w_avg[k].data.clone().detach().div(len(model_dic)) + torch.mul(torch.randn(w_avg[k].shape), dp)
     return w_avg
 
@@ -58,7 +57,6 @@ def att_dic(w_clients, w_server, device, stepsize=1, metric=1, dp=0.001):
         att[k] = torch.zeros(len(w_clients)).cpu()
     for k in w_next.keys():
         for i in range(0, len(w_clients)):
-            # att[k][i] = torch.from_numpy(np.array(linalg.norm(w_server[k] - w_clients[i][k], ord=metric)))
             att[k][i] = torch.norm((w_server[k]-w_clients[i][k]).type(torch.float32), metric)
     for k in w_next.keys():
         att[k] = torch.nn.functional.softmax(att[k], dim=0)
@@ -90,16 +88,8 @@ def graph_dic(models_dic, pre_A, args):
         A = generate_adj(param_metrix, args, subgraph_size).cpu().detach().numpy()
         A = normalize_adj(A)
         A = torch.tensor(A)
-        # A = torch.tensor(normalize_adj(generate_adj(param_metrix, args, subgraph_size).cpu().detach()))
         if args.agg == "graph_v3":
             A = (1 - args.adjbeta) * pre_A + args.adjbeta * A
-
-        #TODO: for analysis purpose, might cleaned up.
-        adj_file = args.logDir.replace("log", "learned_adj")[:-4] + ".pth"
-        if not os.path.exists("learned_adj"):
-            os.makedirs("learned_adj")
-        with open(adj_file, "wb") as fw:
-            pk.dump({"pre_adj": pre_A, "adj": A}, fw, -1)
     else:
         A = pre_A
 
@@ -184,6 +174,5 @@ def generate_adj(param_metrix, args, subgraph_size):
 
 def read_out(personalized_models, device):
     # average pooling as read out function
-    # global_model = average_agg(personalized_models)
     global_model = average_dic(personalized_models, device, 0)
     return [global_model] * len(personalized_models)

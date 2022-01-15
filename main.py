@@ -4,7 +4,6 @@ import copy
 import numpy as np
 import time
 from BResidual import BResidual
-from models import CNNMnist
 from options import arg_parameter
 from data_util import load_cifar10, load_mnist
 from federated import Cifar10FedEngine
@@ -16,14 +15,8 @@ def main(args):
     args.device = torch.device(args.device)
 
     print("Prepare data and model...")
-    if args.dataset == "cifar10":
-        train_batches, test_batches, A, overall_tbatches = load_cifar10(args)
-        model = BResidual(3)
-    elif args.dataset == "mnist":
-        args.num_channels = 1
-        train_batches, test_batches, A, overall_tbatches = load_mnist(args)
-        model = BResidual(1)
-        # model = CNNMnist(args)
+    train_batches, test_batches, A, overall_tbatches = load_cifar10(args)
+    model = BResidual(3)
 
     print("Parameter holders")
     w_server, w_local = model.get_state()
@@ -31,42 +24,23 @@ def main(args):
     w_local = [w_local] * args.clients
     global_model = copy.deepcopy(w_server)
     personalized_model = copy.deepcopy(w_server)
-    if args.agg == "scaffold":
-        server_state = {"global_round": 0,
-                        "c": tuple(torch.zeros_like(p) for _, p in global_model[0].items())}
 
-        c_state = {"global_round": server_state["global_round"],
-                   "model_delta": None,
-                   "c_i": server_state["c"],
-                   "c_i_delta": None,
-                   "c": server_state["c"]}
-        client_states = [c_state] * args.clients
-    else:
-        server_state = None
-        client_states = [None] * args.clients
+    server_state = None
+    client_states = [None] * args.clients
 
     print2file(str(args), args.logDir, True)
     nParams = sum([p.nelement() for p in model.parameters()])
     print2file('Number of model parameters is ' + str(nParams), args.logDir, True)
 
-    # Server aggregation  debug
-    # selected_user = range(args.clients)
-    # personalized_model, client_states, server_state = \
-    #     parameter_aggregate(args, A, w_server, global_model, server_state, client_states, selected_user)
-
     print("Start Training...")
     num_collaborator = max(int(args.client_frac * args.clients), 1)
     for com in range(1, args.com_round + 1):
         selected_user = np.random.choice(range(args.clients), num_collaborator, replace=False)
-        # selected_user = [i for i in range(args.clients)]
         train_time = []
         train_loss = []
         train_acc = []
 
-        # for c in range(0, len(selected_user), args.num_thread):
         for c in selected_user:
-        # for c in range(0, 5, args.num_thread):
-
             # Training
             engine = Cifar10FedEngine(args, copy.deepcopy(train_batches[c]), global_model[c], personalized_model[c],
                                           w_local[c], {}, c, 0, "Train", server_state, client_states[c])
@@ -110,16 +84,11 @@ def main(args):
             all_vacc = []
 
             for c in range(args.clients):
-            # for c in range(2):
-
                 batch_time = []
                 batch_loss = []
                 batch_acc = []
 
                 for batch in test_batches:
-                    # outputs = [{}]
-                    # tengine = Cifar10FedEngine(args, copy.deepcopy(batch), personalized_model[c],
-                    #                               w_server[c], w_local[c], {}, c, 0, "Test")
                     tengine = Cifar10FedEngine(args, copy.deepcopy(batch), personalized_model[c], personalized_model[c],
                                                w_local[c], {}, c, 0, "Test", server_state, client_states[c])
 

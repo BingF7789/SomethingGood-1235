@@ -24,7 +24,7 @@ def arg_parameter():
     # Federated arguments
     parser.add_argument('--clients', type=int, default=100, help="number of users: K")
     parser.add_argument('--shards', type=int, default=2, help="each client roughly have 2 data classes")
-    parser.add_argument('--serveralpha', type=float, default=0.1, help='server prop alpha')
+    parser.add_argument('--serveralpha', type=float, default=1, help='server prop alpha')
     parser.add_argument('--serverbeta', type=float, default=0.3, help='personalized agg rate alpha')
     parser.add_argument('--deep', type=int, default=0, help='0: 1 layer only, 1: 2 layers, 3:full-layers')
     parser.add_argument('--agg', type=str, default='none', help='averaging strategy')

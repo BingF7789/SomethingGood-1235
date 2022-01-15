@@ -1,5 +1,0 @@
-python main.py --dataset mnist --com_round 20  --shards 2 --lr 0.001 --logDir /home/fengchen/Data/log/,1217-011.txt --device cuda:2 --agg prox --serveralpha 1 --reg 0
-python main.py --dataset mnist --com_round 20  --shards 5 --lr 0.001 --logDir /home/fengchen/Data/log/,1217-012.txt --device cuda:2 --agg prox --serveralpha 1 --reg 0
-python main.py --dataset mnist --com_round 20  --shards 10 --lr 0.001 --logDir /home/fengchen/Data/log/,1217-013.txt --device cuda:2 --agg prox --serveralpha 1 --reg 0
-python main.py --dataset mnist --com_round 20  --shards 20 --lr 0.001 --logDir /home/fengchen/Data/log/,1217-014.txt --device cuda:2 --agg prox --serveralpha 1 --reg 0
-python main.py --dataset mnist --com_round 20  --shards 50 --lr 0.001 --logDir /home/fengchen/Data/log/,1217-015.txt --device cuda:2 --agg prox --serveralpha 1 --reg 0
